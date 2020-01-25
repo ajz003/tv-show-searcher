@@ -15,7 +15,6 @@ class App extends React.Component {
       value: "",
       results: []
     };
-
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
@@ -35,8 +34,27 @@ class App extends React.Component {
     axios
       .get(`http://api.tvmaze.com/search/shows?q=${this.state.value}`)
       .then(res => {
-        this.setState({ results: res.data });
+        this.getEpisodes(res.data);
       });
+  }
+
+
+  getEpisodes(showResults) {
+    var promises = [];
+    var showResults = showResults;
+
+    showResults.forEach(function(result) {
+      var id = result.show.id
+      promises.push(axios.get(`http://api.tvmaze.com/shows/${id}/episodes`))
+    })
+
+    axios.all(promises).then((results) => {
+      for (let i = 0; i < results.length; i++) {
+        showResults[i].episodes = results[i].data
+      }
+      this.setState({results: showResults})
+    })
+
   }
 
   render() {
@@ -46,9 +64,8 @@ class App extends React.Component {
           tvShowTitle={result.show.name ? result.show.name : null}
           tvShowDescription={result.show.summary ? result.show.summary : null}
           tvShowImageUrl={result.show.image ? result.show.image.original : null}
-          tvShowEpisodes={result.show}
+          tvShowEpisodes={result.episodes ? result.episodes : null}
           tvShowId={result.show.id}
-          getEpisodes={this.getEpisodes}
         />
       );
     });
@@ -72,7 +89,7 @@ class App extends React.Component {
 </section>
 
           <section className="section">
-            {allResults}
+            {this.state.results && allResults}
           </section>
         </header>
       </div>
@@ -84,24 +101,22 @@ class Result extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      episodes: [],
-      episodesGotten: false,
+      areEpisodesShown: false,
     };
-    this.getEpisodes = this.getEpisodes.bind(this);
+    this.showEpisodes= this.showEpisodes.bind(this)
   }
 
-  getEpisodes(showId) {
-    axios.get(`http://api.tvmaze.com/shows/${showId}/episodes`).then(res => {
-      this.setState({ episodes: res.data, episodesGotten: true });
-    });
+  showEpisodes() {
+    this.setState({areEpisodesShown: !this.state.areEpisodesShown})
   }
+
 
   render() {
     var tvShowImage;
     if (this.props.tvShowImageUrl) {
       tvShowImage = <img src={this.props.tvShowImageUrl} />;
     } else {
-      tvShowImage = <p>Sorry, no image is available for this show...</p>;
+      tvShowImage = <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg" />;
     }
     return (
       <div className="result">
@@ -111,9 +126,10 @@ class Result extends React.Component {
           <div
             dangerouslySetInnerHTML={createMarkup(this.props.tvShowDescription)}
           ></div>
-          <div onClick={() => this.getEpisodes(this.props.tvShowId)}>
-            Click here to get a list of episodes
-            <EpisodeList episodes={this.state.episodes} episodesGotten={this.state.episodesGotten} />
+          <div className="hide-show-episodes" onClick={this.showEpisodes}>
+            {this.state.areEpisodesShown ? <p>Hide Episode List</p> : <p>Show Episode List</p>}
+            {this.state.areEpisodesShown && <EpisodeList episodes={this.props.tvShowEpisodes} />}
+            
           </div>
         </div>
       </div>
@@ -140,10 +156,8 @@ function EpisodeList(props) {
 function EpisodeListItem(props) {
   return (
     <li>
-      <p>
-        Season {props.season} Episode {props.number}
-      </p>{" "}
-      <p>Episode Name: {props.name}</p>
+      <span>
+        Season {props.season} Episode {props.number}:</span><span><strong> {props.name}</strong></span>
     </li>
   );
 }

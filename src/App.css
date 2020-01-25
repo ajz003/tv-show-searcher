@@ -13,7 +13,7 @@ p {
 }
 
 .section {
-  max-width: 928px;
+  max-width: 80%;
   padding: 32px 0;
 }
 
@@ -30,8 +30,13 @@ p {
   justify-self: center;
 }
 
-.result img:hover {
+/* .result img:hover {
   opacity: 0.5;
+} */
+
+.hide-show-episodes p {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 ul li {
