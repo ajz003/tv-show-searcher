@@ -1,3 +1,8 @@
+p {
+  font-size: 16px;
+  font-size: 1rem;
+}
+
 .App {
   text-align: center;
 }
@@ -5,6 +10,33 @@
 .App-logo {
   height: 40vmin;
   pointer-events: none;
+}
+
+.section {
+  max-width: 928px;
+  padding: 32px 0;
+}
+
+.result {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  border: 5px solid #f4f4f4;
+  margin-bottom: 32px;
+}
+
+.result img {
+  width: 50%;
+  padding: 32px;
+  justify-self: center;
+}
+
+.result img:hover {
+  opacity: 0.5;
+}
+
+ul li {
+  font-size: 1rem;
+  list-style: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
