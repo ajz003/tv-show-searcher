@@ -1,12 +1,9 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
+import Result from "./components/Result";
 
 import axios from "axios";
-
-function createMarkup(html) {
-  return { __html: html };
-}
 
 class App extends React.Component {
   constructor(props) {
@@ -17,12 +14,6 @@ class App extends React.Component {
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  componentDidMount() {
-    axios.get(`http://api.tvmaze.com/search/shows?q=check`).then(res => {
-      console.log(res);
-    });
   }
 
   handleChange(event) {
@@ -38,23 +29,21 @@ class App extends React.Component {
       });
   }
 
-
   getEpisodes(showResults) {
     var promises = [];
     var showResults = showResults;
 
     showResults.forEach(function(result) {
-      var id = result.show.id
-      promises.push(axios.get(`http://api.tvmaze.com/shows/${id}/episodes`))
-    })
+      var id = result.show.id;
+      promises.push(axios.get(`http://api.tvmaze.com/shows/${id}/episodes`));
+    });
 
-    axios.all(promises).then((results) => {
+    axios.all(promises).then(results => {
       for (let i = 0; i < results.length; i++) {
-        showResults[i].episodes = results[i].data
+        showResults[i].episodes = results[i].data;
       }
-      this.setState({results: showResults})
-    })
-
+      this.setState({ results: showResults });
+    });
   }
 
   render() {
@@ -73,11 +62,11 @@ class App extends React.Component {
     return (
       <div className="App">
         <header className="App-header">
-<section className="section">
+          <section className="section">
             <h1>TV Maze Finder</h1>
             <form className="finder-form" onSubmit={this.handleSubmit}>
               <label>
-                Enter Show to Search: 
+                Enter Show to Search:
                 <input
                   type="text"
                   value={this.state.value}
@@ -86,7 +75,7 @@ class App extends React.Component {
               </label>
               <input type="submit" value="Submit" />
             </form>
-</section>
+          </section>
 
           <section className="section">
             {this.state.results && allResults}
@@ -95,71 +84,6 @@ class App extends React.Component {
       </div>
     );
   }
-}
-
-class Result extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      areEpisodesShown: false,
-    };
-    this.showEpisodes= this.showEpisodes.bind(this)
-  }
-
-  showEpisodes() {
-    this.setState({areEpisodesShown: !this.state.areEpisodesShown})
-  }
-
-
-  render() {
-    var tvShowImage;
-    if (this.props.tvShowImageUrl) {
-      tvShowImage = <img src={this.props.tvShowImageUrl} />;
-    } else {
-      tvShowImage = <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg" />;
-    }
-    return (
-      <div className="result">
-        {tvShowImage}
-        <div>
-          <h2>{this.props.tvShowTitle}</h2>
-          <div
-            dangerouslySetInnerHTML={createMarkup(this.props.tvShowDescription)}
-          ></div>
-          <div className="hide-show-episodes" onClick={this.showEpisodes}>
-            {this.state.areEpisodesShown ? <p>Hide Episode List</p> : <p>Show Episode List</p>}
-            {this.state.areEpisodesShown && <EpisodeList episodes={this.props.tvShowEpisodes} />}
-            
-          </div>
-        </div>
-      </div>
-    );
-  }
-}
-
-function EpisodeList(props) {
-  var episodeList = props.episodes.map(episode => (
-    <EpisodeListItem
-      season={episode.season}
-      number={episode.number}
-      name={episode.name}
-    />
-  ));
-  return (
-    <div>
-      {props.episodes.length < 1 && props.episodesGotten && <p>No episodes available</p>}
-      <ul>{episodeList}</ul>
-    </div>
-  );
-}
-
-function EpisodeListItem(props) {
-  return (
-    <li>
-      <span>
-        Season {props.season} Episode {props.number}:</span><span><strong> {props.name}</strong></span>
-    </li>
-  );
 }
 
 export default App;
