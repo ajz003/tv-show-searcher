@@ -22,6 +22,7 @@ class App extends React.Component {
 
   handleSubmit(event) {
     event.preventDefault();
+    this.setState({results: []})
     axios
       .get(`http://api.tvmaze.com/search/shows?q=${this.state.value}`)
       .then(res => {
